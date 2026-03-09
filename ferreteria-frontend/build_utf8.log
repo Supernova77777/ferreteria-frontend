@@ -1,0 +1,62 @@
+﻿[33mÔØ»[39m Building...
+[32mÔ£ö[39m Building...
+Application bundle generation failed. [4.558 seconds] - 2026-03-04T20:18:35.844Z
+
+node.exe : 
+[1m[31m[31mX [41;31
+m[[41;97mERROR[41;31m
+][0m [1mTS2551: 
+Property 'descargarRepo
+rteExcel' does not 
+exist on type 
+'History'. Did you 
+mean 'descargarReporte'
+?[0m [1m[35m[plugin 
+angular-compiler][0m
+En línea: 1 Carácter: 1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([1m[31m[31   
+ mX...r-compiler][    
+0m:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+
+    src/app/pages/histo
+ry/history.html:89:70:
+[37m      89 Ôöé 
+...s="report-btn 
+excel" (click)="[32mde
+scargarReporteExcel[37
+m(sale, $event)"
+         ÔòÁ           
+                       
+[32m~~~~~~~~~~~~~~~~~~
+~~~[0m
+
+  Error occurs in the 
+template of component 
+History.
+
+    src/app/pages/histo
+ry/history.ts:10:17:
+[37m      10 Ôöé     
+templateUrl: [32m'./hi
+story.html'[37m,
+         ÔòÁ           
+       [32m~~~~~~~~~~~
+~~~~~[0m
+
+[39m[22m

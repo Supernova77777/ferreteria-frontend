@@ -1,0 +1,157 @@
+<div class="history-container">
+    <div class="history-header">
+        <div class="header-content" style="display: flex; justify-content: space-between; align-items: flex-start;">
+            <div>
+                <h1>Historial de Ventas</h1>
+                <p class="subtitle">Registro de todas las transacciones realizadas en el Punto de Venta</p>
+            </div>
+            <div class="header-actions" style="display: flex; gap: 10px; align-items: center;" *ngIf="sales.length > 0">
+                <div class="report-group"
+                    style="display: flex; align-items: center; background-color: #1e1e1e; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+                    <select [(ngModel)]="tipoReporteGlobal"
+                        style="background-color: transparent; color: #e2e8f0; border: none; padding: 10px; font-size: 0.9rem; outline: none; cursor: pointer;">
+                        <option value="global" style="background-color: #1e1e1e;">Global</option>
+                        <option value="dia" style="background-color: #1e1e1e;">Por Día</option>
+                        <option value="semana" style="background-color: #1e1e1e;">Semanal</option>
+                        <option value="mes" style="background-color: #1e1e1e;">Mensual</option>
+                    </select>
+
+                    <select *ngIf="tipoReporteGlobal === 'dia'" [(ngModel)]="selectedDay"
+                        style="background-color: transparent; color: #38bdf8; border: none; border-left: 1px solid rgba(255,255,255,0.1); padding: 10px; font-size: 0.9rem; outline: none; cursor: pointer;">
+                        <option *ngFor="let day of availableDays" [value]="day" style="background-color: #1e1e1e;">{{
+                            day }}</option>
+                    </select>
+
+                    <select *ngIf="tipoReporteGlobal === 'semana'" [(ngModel)]="selectedWeek"
+                        style="background-color: transparent; color: #38bdf8; border: none; border-left: 1px solid rgba(255,255,255,0.1); padding: 10px; font-size: 0.9rem; outline: none; cursor: pointer;">
+                        <option *ngFor="let week of availableWeeks" [value]="week" style="background-color: #1e1e1e;">
+                            Semana: {{ week }}</option>
+                    </select>
+
+                    <select *ngIf="tipoReporteGlobal === 'mes'" [(ngModel)]="selectedMonth"
+                        style="background-color: transparent; color: #38bdf8; border: none; border-left: 1px solid rgba(255,255,255,0.1); padding: 10px; font-size: 0.9rem; outline: none; cursor: pointer;">
+                        <option *ngFor="let month of availableMonths" [value]="month"
+                            style="background-color: #1e1e1e;">Mes: {{ month }}</option>
+                    </select>
+
+                    <button class="report-btn" (click)="descargarReporteGlobal()"
+                        style="background-color: var(--primary-color); color: white; border: none; padding: 10px 16px; cursor: pointer; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: background-color 0.2s; border-left: 1px solid rgba(255,255,255,0.1);"
+                        onmouseover="this.style.backgroundColor='#1976D2'"
+                        onmouseout="this.style.backgroundColor='var(--primary-color)'" title="Descargar Reporte Word">
+                        📄 Word
+                    </button>
+                    <button class="report-btn excel" (click)="descargarReporteGlobalExcel()"
+                        style="background-color: #107c41; color: white; border: none; padding: 10px 16px; cursor: pointer; font-size: 0.9rem; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: background-color 0.2s; border-left: 1px solid rgba(255,255,255,0.1);"
+                        onmouseover="this.style.backgroundColor='#0c5c30'"
+                        onmouseout="this.style.backgroundColor='#107c41'" title="Descargar Reporte Excel">
+                        📊 Excel
+                    </button>
+                </div>
+                <button class="clear-btn" (click)="clearHistory()">
+                    🗑️ Vaciar Historial
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-content">
+        <div class="empty-state" *ngIf="sales.length === 0">
+            <div class="empty-icon">📂</div>
+            <h3>No hay ventas registradas</h3>
+            <p>Las ventas que realices en el Punto de Venta (POS) aparecerán aquí.</p>
+        </div>
+
+        <div class="sales-list" *ngIf="sales.length > 0">
+            <div class="sale-card" *ngFor="let sale of sales">
+                <div class="sale-summary" (click)="toggleDetails(sale.id)">
+                    <div class="sale-info">
+                        <span class="sale-id">{{ sale.id }}</span>
+                        <span class="sale-date">{{ sale.date | date:'dd/MM/yyyy HH:mm' }}</span>
+                        <span class="sale-seller"
+                            style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; display: block;">
+                            👤 Vendedor: {{ sale.sellerName }} ({{ sale.sellerRole }})
+                        </span>
+                    </div>
+                    <div class="sale-totals" style="display: flex; align-items: center; gap: 15px;">
+                        <span class="sale-items-count">{{ sale.items.length }} artículos</span>
+                        <span class="sale-total">{{ sale.total | currency }}</span>
+                        <button class="expand-btn" style="order: 1">
+                            {{ expandedSaleId === sale.id ? '▲' : '▼' }}
+                        </button>
+                        <div style="display: flex; gap: 5px;">
+                            <button class="report-btn" (click)="descargarReporte(sale, $event)"
+                                style="background-color: var(--primary-color); color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: background-color 0.2s;"
+                                onmouseover="this.style.backgroundColor='#1976D2'"
+                                onmouseout="this.style.backgroundColor='var(--primary-color)'"
+                                title="Descargar Factura en Word">
+                                📄 Word
+                            </button>
+                            <button class="report-btn excel" (click)="descargarReporteExcel(sale, $event)"
+                                style="background-color: #107c41; color: white; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 0.85rem; font-weight: bold; display: flex; align-items: center; gap: 5px; transition: background-color 0.2s;"
+                                onmouseover="this.style.backgroundColor='#0c5c30'"
+                                onmouseout="this.style.backgroundColor='#107c41'" title="Descargar Factura en Excel">
+                                📊 Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sale-details" *ngIf="expandedSaleId === sale.id">
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio Unit.</th>
+                                <th>Cant.</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr *ngFor="let item of sale.items">
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.product.price | currency }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ (item.product.price * item.quantity) | currency }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="sale-footer">
+                        <div class="summary-line">
+                            <span>Subtotal:</span>
+                            <span>{{ sale.subtotal | currency }}</span>
+                        </div>
+                        <div class="summary-line">
+                            <span>IVA:</span>
+                            <span>{{ sale.tax | currency }}</span>
+                        </div>
+                        <div class="summary-line total-line">
+                            <span>Total Cobrado:</span>
+                            <span>{{ sale.total | currency }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showClearModal" (click)="cancelClear()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Confirmar Acción</h2>
+            <button class="close-btn" (click)="cancelClear()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <p>¿Está seguro de vaciar todo el historial de ventas?</p>
+            <p style="color: #ef4444; margin-top: 10px; font-size: 0.9rem;">Esta acción NO se puede deshacer.</p>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-text" (click)="cancelClear()">Cancelar</button>
+            <button class="btn-danger" (click)="confirmClear()">Borrar Historial</button>
+        </div>
+    </div>
+</div>

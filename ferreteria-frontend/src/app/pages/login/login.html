@@ -1,0 +1,31 @@
+<div class="login-container">
+    <div class="login-card">
+        <div class="brand">
+            <img src="imagenes/logoTruper.png" alt="Truper Logo" class="brand-logo">
+            <h1>Ferre <span class="highlight">Centro</span></h1>
+            <p>Sistema de Gestión</p>
+        </div>
+
+        <div class="login-form">
+            <h3>Iniciar Sesión</h3>
+
+            <div class="form-group">
+                <input type="text" [ngModel]="username()" (ngModelChange)="username.set($event)"
+                    placeholder="Usuario (ej. admin)" class="form-input">
+            </div>
+
+            <div class="form-group">
+                <input type="password" [ngModel]="password()" (ngModelChange)="password.set($event)"
+                    placeholder="Contraseña" class="form-input">
+            </div>
+
+            <div *ngIf="errorMessage()" class="error-message">
+                {{ errorMessage() }}
+            </div>
+
+            <button class="login-btn" (click)="login()">
+                Entrar
+            </button>
+        </div>
+    </div>
+</div>

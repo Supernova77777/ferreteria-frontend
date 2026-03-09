@@ -1,0 +1,43 @@
+<div class="dashboard-header">
+    <h1>Inicio</h1>
+</div>
+
+<!-- Admin Only Chart -->
+<div class="stats-grid" *ngIf="isAdmin()">
+    <div class="chart-container"
+        style="position: relative; width:100%; background: var(--surface-dark); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); margin-top: 2rem;">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h2 style="color: var(--text-light); margin: 0;">
+                {{ selectedBrand === 'Todas' ? 'Rendimiento de Ventas General' : 'Productos Vendidos: ' + selectedBrand
+                }}
+            </h2>
+        </div>
+
+        <div class="brand-slider-container" *ngIf="availableBrands.length > 0">
+            <div class="slider-indicator" [ngStyle]="sliderStyle"></div>
+            <div class="brand-slider">
+                <button *ngFor="let brand of availableBrands" (click)="selectBrand(brand, $event)" class="brand-btn"
+                    [class.active]="selectedBrand === brand">
+                    {{ brand }}
+                </button>
+            </div>
+        </div>
+
+        <div style="position: relative; height:400px; width:100%;">
+            <canvas baseChart [data]="chartData" [options]="chartOptions"
+                [type]="selectedBrand === 'Todas' ? 'line' : 'bar'">
+            </canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Employee Welcome Message -->
+<div class="stats-grid" *ngIf="!isAdmin()">
+    <div
+        style="background: var(--surface-dark); padding: 2rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); margin-top: 2rem; width: 100%;">
+        <h2 style="color: var(--primary-color); margin-bottom: 0.5rem;">¡Bienvenido/a a tu panel de trabajo!</h2>
+        <p style="color: var(--text-muted);">Desde aquí puedes revisar el inventario o utilizar el Punto de Venta para
+            procesar las transacciones de los clientes.</p>
+    </div>
+</div>

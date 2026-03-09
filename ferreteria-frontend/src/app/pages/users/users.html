@@ -1,0 +1,117 @@
+<div class="dashboard-header">
+    <h1>Usuarios</h1>
+    <p class="date">Gestión de Accesos al Sistema</p>
+</div>
+
+<div class="stats-grid">
+    <div class="card stat-card action-card" (click)="openUserModal()" *ngIf="isAdmin()">
+        <div class="icon-container blue">
+            <i class="icon">👥</i>
+        </div>
+        <div class="stat-info">
+            <h3>Gestionar Usuarios</h3>
+            <p class="action-text">Crear nuevo acceso</p>
+        </div>
+    </div>
+</div>
+
+<!-- User Management Section (Only for Admin) -->
+<div class="user-management-section" *ngIf="isAdmin()">
+    <h2>Usuarios del Sistema</h2>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Usuario</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Contraseña</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let user of users()">
+                    <td>{{ user.name }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.phone || 'N/A' }}</td>
+                    <td>
+                        <span class="status"
+                            [ngClass]="{'completed': user.role === 'admin' || user.role === 'administrator', 'pending': user.role === 'employee'}">
+                            {{ user.role === 'admin' ? 'Coordinador' : (user.role === 'administrator' ? 'Administrador'
+                            : 'Empleado') }}
+                        </span>
+                    </td>
+                    <td>
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <span style="font-family: monospace;">
+                                {{ visiblePasswords.has(user.username) ? user.password : '••••••••' }}
+                            </span>
+                            <button (click)="togglePasswordVisibility(user.username)"
+                                style="background: none; border: none; cursor: pointer; padding: 4px; opacity: 0.7; transition: opacity 0.2s;"
+                                title="Mostrar/Ocultar contraseña">
+                                {{ visiblePasswords.has(user.username) ? '🙈' : '👁️' }}
+                            </button>
+                        </span>
+                    </td>
+                    <td>
+                        <button class="edit-btn" (click)="editUser(user)">
+                            ✏️ Editar
+                        </button>
+                        <button class="delete-btn" (click)="deleteUser(user.username)"
+                            *ngIf="user.username !== 'admin'">
+                            🗑️ Eliminar
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- User Management Modal -->
+<div class="modal-overlay" *ngIf="showUserModal()">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>{{ isEditing() ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}</h2>
+            <button class="close-btn" (click)="closeUserModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nombre Completo</label>
+                <input type="text" [ngModel]="newUser.name" (ngModelChange)="newUser.name = $event"
+                    placeholder="Ej. Juan Pérez">
+            </div>
+            <div class="form-group">
+                <label>Usuario (Login)</label>
+                <input type="text" [ngModel]="newUser.username" (ngModelChange)="newUser.username = $event"
+                    placeholder="Ej. juanp">
+            </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="tel" [ngModel]="newUser.phone" (ngModelChange)="newUser.phone = $event"
+                    placeholder="Ej. 555-1234">
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" [ngModel]="newUser.password" (ngModelChange)="newUser.password = $event"
+                    placeholder="********">
+            </div>
+            <div class="form-group">
+                <label>Rol</label>
+                <select [ngModel]="newUser.role" (ngModelChange)="newUser.role = $event">
+                    <option value="employee">Empleado</option>
+                    <option value="admin">Coordinador</option>
+                    <option value="administrator">Administrador</option>
+                </select>
+            </div>
+            <div *ngIf="modalError()" class="error-message">{{ modalError() }}</div>
+            <div *ngIf="modalSuccess()" class="success-message">{{ modalSuccess() }}</div>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-btn" (click)="closeUserModal()">Cancelar</button>
+            <button class="save-btn" (click)="saveUser()">{{ isEditing() ? 'Guardar Cambios' : 'Crear Usuario'
+                }}</button>
+        </div>
+    </div>
+</div>

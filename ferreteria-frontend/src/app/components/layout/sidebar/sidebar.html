@@ -1,0 +1,52 @@
+@if (currentUser()) {
+<nav class="sidebar-container">
+    <div class="brand">
+        <h2>Ferre <span class="highlight">Centro</span></h2>
+    </div>
+    <ul class="nav-links">
+        @if (currentUser()?.role === 'admin' || currentUser()?.role === 'administrator') {
+        <li>
+            <a routerLink="/dashboard" routerLinkActive="active">
+                <i class="icon">📊</i> Inicio
+            </a>
+        </li>
+        }
+
+        <li>
+            <a routerLink="/inventory" routerLinkActive="active">
+                <i class="icon">📦</i> Inventario
+            </a>
+        </li>
+        <li>
+            <a routerLink="/pos" routerLinkActive="active">
+                <i class="icon">💰</i>
+                <span>Punto de Venta</span>
+            </a>
+        </li>
+
+        @if (currentUser()?.role === 'admin' || currentUser()?.role === 'administrator') {
+        <li>
+            <a routerLink="/users" routerLinkActive="active">
+                <i class="icon">👥</i>
+                <span>Usuarios</span>
+            </a>
+        </li>
+        <li>
+            <a routerLink="/history" routerLinkActive="active">
+                <i class="icon">📑</i>
+                <span>Historial</span>
+            </a>
+        </li>
+        }
+    </ul>
+    <div class="user-profile">
+        <div class="avatar">{{ currentUser()?.name?.charAt(0) }}</div>
+        <div class="info">
+            <p class="name">{{ currentUser()?.name }}</p>
+            <p class="role">{{ currentUser()?.role === 'admin' ? 'Coordinador' : (currentUser()?.role ===
+                'administrator' ? 'Administrador' : 'Empleado') }}</p>
+        </div>
+        <button class="logout-btn" (click)="logout()" title="Cerrar Sesión">↪</button>
+    </div>
+</nav>
+}

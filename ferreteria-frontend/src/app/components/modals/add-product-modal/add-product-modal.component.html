@@ -1,0 +1,60 @@
+<div class="modal-overlay" (click)="close()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>{{ editProduct ? 'Editar Producto' : 'Nuevo Producto' }}</h2>
+            <button class="close-btn" (click)="close()">×</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group" *ngIf="editProduct">
+                <label>Código Interno / ID del Sistema</label>
+                <input type="text" placeholder="Ej. P-001" [(ngModel)]="productForm.id" />
+            </div>
+
+            <div class="form-group">
+                <label>Código del Material</label>
+                <input type="text" placeholder="Ej. ART-001" [(ngModel)]="productForm.codigo" />
+            </div>
+
+            <div class="form-group">
+                <label>Nombre del Producto</label>
+                <input type="text" placeholder="Ej. Martillo" [(ngModel)]="productForm.name" />
+            </div>
+
+            <div class="form-group">
+                <label>Marca</label>
+                <select [(ngModel)]="productForm.marca">
+                    <option value="TRUPER">TRUPER</option>
+                    <option value="PRETUL">PRETUL</option>
+                    <option value="FOSET">FOSET</option>
+                    <option value="VOLTECK">VOLTECK</option>
+                    <option value="FIERO">FIERO</option>
+                    <option value="HERMEX">HERMEX</option>
+                    <option value="Klintek">Klintek</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Precio ($)</label>
+                    <input type="number" placeholder="0.00" [(ngModel)]="productForm.price" />
+                </div>
+                <div class="form-group">
+                    <label>Stock Inicial</label>
+                    <input type="number" placeholder="0" [(ngModel)]="productForm.stock" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Fecha de Compra</label>
+                <input type="date" [(ngModel)]="productForm.fechaCompra" />
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-text" (click)="close()">Cancelar</button>
+            <button class="btn-primary" (click)="save()">{{ editProduct ? 'Actualizar Producto' : 'Guardar Producto'
+                }}</button>
+        </div>
+    </div>
+</div>

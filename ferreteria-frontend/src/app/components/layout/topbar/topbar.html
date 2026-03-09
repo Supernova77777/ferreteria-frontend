@@ -1,0 +1,14 @@
+<div class="topbar-container">
+    <div class="topbar-brand">
+        <!-- Brand intentionally left minimal as user only asked for right-side user info -->
+    </div>
+
+    @if (authService.currentUser()) {
+    <div class="user-info">
+        <span class="user-name">Hola, {{ authService.currentUser()?.name }}</span>
+        <button class="logout-btn" (click)="logout()">
+            Cerrar sesión
+        </button>
+    </div>
+    }
+</div>

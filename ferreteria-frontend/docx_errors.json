@@ -1,0 +1,106 @@
+[
+  {
+    "name": "TemplateError",
+    "message": "Duplicate open tag, expected one open tag",
+    "stack": "Error: Duplicate open tag, expected one open tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateOpenTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:83:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:136:23\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "{{subt",
+      "id": "duplicate_open_tag",
+      "context": "{{subt",
+      "offset": 32,
+      "explanation": "The tag beginning with \"{{subt\" has duplicate open tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate close tag, expected one close tag",
+    "stack": "Error: Duplicate close tag, expected one close tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateCloseTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:95:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:161:21\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "tota}}",
+      "id": "duplicate_close_tag",
+      "context": "tota}}",
+      "offset": 41,
+      "explanation": "The tag ending with \"tota}}\" has duplicate close tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate open tag, expected one open tag",
+    "stack": "Error: Duplicate open tag, expected one open tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateOpenTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:83:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:136:23\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "{{iva}",
+      "id": "duplicate_open_tag",
+      "context": "{{iva}",
+      "offset": 75,
+      "explanation": "The tag beginning with \"{{iva}\" has duplicate open tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate close tag, expected one close tag",
+    "stack": "Error: Duplicate close tag, expected one close tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateCloseTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:95:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:161:21\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "{iva}}",
+      "id": "duplicate_close_tag",
+      "context": "{iva}}",
+      "offset": 80,
+      "explanation": "The tag ending with \"{iva}}\" has duplicate close tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate open tag, expected one open tag",
+    "stack": "Error: Duplicate open tag, expected one open tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateOpenTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:83:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:136:23\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "{{tota",
+      "id": "duplicate_open_tag",
+      "context": "{{tota",
+      "offset": 87,
+      "explanation": "The tag beginning with \"{{tota\" has duplicate open tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate close tag, expected one close tag",
+    "stack": "Error: Duplicate close tag, expected one close tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateCloseTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:95:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:161:21\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "otal}}",
+      "id": "duplicate_close_tag",
+      "context": "otal}}",
+      "offset": 94,
+      "explanation": "The tag ending with \"otal}}\" has duplicate close tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate open tag, expected one open tag",
+    "stack": "Error: Duplicate open tag, expected one open tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateOpenTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:83:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:136:23\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "{{tota",
+      "id": "duplicate_open_tag",
+      "context": "{{tota",
+      "offset": 96,
+      "explanation": "The tag beginning with \"{{tota\" has duplicate open tags",
+      "file": "word/document.xml"
+    }
+  },
+  {
+    "name": "TemplateError",
+    "message": "Duplicate close tag, expected one close tag",
+    "stack": "Error: Duplicate close tag, expected one close tag\n    at new XTTemplateError (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:21:16)\n    at getDuplicateCloseTagException (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\errors.js:95:13)\n    at D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:161:21\n    at Array.reduce (<anonymous>)\n    at getDelimiterErrors (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:126:46)\n    at parseDelimiters (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:327:29)\n    at Object.parse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\lexer.js:418:28)\n    at XmlTemplater.preparse (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\xml-templater.js:124:32)\n    at Docxtemplater.precompileFile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:409:19)\n    at Docxtemplater.compile (D:\\Escritorio\\ejemplo\\ferreteria-frontend\\node_modules\\docxtemplater\\js\\docxtemplater.js:511:16)",
+    "properties": {
+      "xtag": "tras}}",
+      "id": "duplicate_close_tag",
+      "context": "tras}}",
+      "offset": 110,
+      "explanation": "The tag ending with \"tras}}\" has duplicate close tags",
+      "file": "word/document.xml"
+    }
+  }
+]

@@ -1,11 +1,14 @@
 import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
 export type UserRole = 'admin' | 'administrator' | 'employee' | null;
 
 export interface User {
+    id?: number;
     username: string;
-    password?: string; // Optional for security measure in frontend, but here used for mock auth
+    password?: string;
     role: UserRole;
     name: string;
     phone?: string;
@@ -16,96 +19,82 @@ export interface User {
 })
 export class AuthService {
     currentUser = signal<User | null>(null);
+    private apiUrl = 'http://localhost:8080/api/auth';
 
-    private usersKey = 'ferreteria_users';
-
-    constructor(private router: Router) {
-        this.initializeUsers();
+    constructor(private router: Router, private http: HttpClient) {
+        this.initializeUserSession();
     }
 
-    private initializeUsers() {
-        const existingUsers = localStorage.getItem(this.usersKey);
-        if (!existingUsers) {
-            const defaultUsers: User[] = [
-                { username: 'admin', password: '123', role: 'admin', name: '' },
-                { username: 'empleado', password: '123', role: 'employee', name: 'Juan (Emp)' }
-            ];
-            localStorage.setItem(this.usersKey, JSON.stringify(defaultUsers));
-        } else {
-            // No migration needed anymore; respect whatever name the user sets.
+    private initializeUserSession() {
+        const storedUser = localStorage.getItem('ferreteria_current_user');
+        if (storedUser) {
+            try {
+                this.currentUser.set(JSON.parse(storedUser));
+            } catch (e) {
+                console.error("Error parsing stored user");
+            }
         }
     }
 
-    getUsers(): User[] {
-        const users = localStorage.getItem(this.usersKey);
-        return users ? JSON.parse(users) : [];
+    async getUsers(): Promise<User[]> {
+        try {
+            return await firstValueFrom(this.http.get<User[]>(`${this.apiUrl}/users`));
+        } catch (error) {
+            console.error('Error fetching users', error);
+            return [];
+        }
     }
 
-    addUser(user: User) {
-        const users = this.getUsers();
-        // Check if user already exists
-        if (users.find(u => u.username === user.username)) {
-            return false; // User exists
+    async addUser(user: User) {
+        try {
+            await firstValueFrom(this.http.post<User>(`${this.apiUrl}/users`, user));
+            return true;
+        } catch (error: any) {
+            console.error('Error adding user', error);
+            if (error.error && error.error.message) {
+                alert('Error: ' + error.error.message);
+            }
+            return false;
         }
-        users.push(user);
-        localStorage.setItem(this.usersKey, JSON.stringify(users));
+    }
+
+    async updateUser(id: number | undefined, updatedUser: User) {
+        if (!id) return false;
+        const result = await firstValueFrom(this.http.put<User>(`${this.apiUrl}/users/${id}`, updatedUser));
+
+        const current = this.currentUser();
+        if (current && current.id === id) {
+            const safeUser = { ...result };
+            delete safeUser.password;
+            this.currentUser.set(safeUser);
+            localStorage.setItem('ferreteria_current_user', JSON.stringify(safeUser));
+        }
         return true;
     }
 
-    updateUser(originalUsername: string, updatedUser: User) {
-        const users = this.getUsers();
-        const index = users.findIndex(u => u.username === originalUsername);
-        if (index !== -1) {
-            // Check if changing to a username that already exists (and is not self)
-            if (updatedUser.username !== originalUsername && users.find(u => u.username === updatedUser.username)) {
-                return false; // Target username already exists
-            }
-            users[index] = updatedUser;
-            localStorage.setItem(this.usersKey, JSON.stringify(users));
-
-            const current = this.currentUser();
-            if (current && current.username === originalUsername) {
-                const safeUser = { ...updatedUser };
-                delete safeUser.password;
-                this.currentUser.set(safeUser);
-            }
-            return true;
-        }
-        return false;
+    async deleteUser(id: number | undefined) {
+        if (!id) return false;
+        await firstValueFrom(this.http.delete(`${this.apiUrl}/users/${id}`));
+        return true;
     }
 
-    deleteUser(username: string) {
-        const users = this.getUsers();
-        const filteredUsers = users.filter(u => u.username !== username);
-        localStorage.setItem(this.usersKey, JSON.stringify(filteredUsers));
+    async login(username: string, password: string): Promise<boolean> {
+        const user = await firstValueFrom(this.http.post<User>(`${this.apiUrl}/login`, { username, password }));
 
-        // Return true if a user was actually removed
-        return users.length !== filteredUsers.length;
-    }
+        this.currentUser.set(user);
+        localStorage.setItem('ferreteria_current_user', JSON.stringify(user));
 
-    login(username: string, password: string): boolean {
-        const users = this.getUsers();
-        const user = users.find(u => u.username === username && u.password === password);
-
-        if (user) {
-            // Create a safe user object without password to store in state
-            const safeUser = { ...user };
-            delete safeUser.password;
-
-            this.currentUser.set(safeUser);
-
-            if (user.role === 'admin' || user.role === 'administrator') {
-                this.router.navigate(['/dashboard']);
-            } else {
-                this.router.navigate(['/inventory']);
-            }
-            return true;
+        if (user.role === 'admin' || user.role === 'administrator') {
+            this.router.navigate(['/dashboard']);
+        } else {
+            this.router.navigate(['/inventory']);
         }
-        return false;
+        return true;
     }
 
     logout() {
         this.currentUser.set(null);
+        localStorage.removeItem('ferreteria_current_user');
         this.router.navigate(['/login']);
     }
 

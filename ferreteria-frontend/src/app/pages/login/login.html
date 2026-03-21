@@ -23,8 +23,8 @@
                 {{ errorMessage() }}
             </div>
 
-            <button class="login-btn" (click)="login()">
-                Entrar
+            <button class="login-btn" (click)="login()" [disabled]="isLoading()">
+                {{ isLoading() ? 'Iniciando...' : 'Entrar' }}
             </button>
         </div>
     </div>

@@ -36,28 +36,32 @@ export class Pos {
   // Global Config for IVA (Simulated stored locally)
   ivaPercentage = Number(localStorage.getItem('ferreteria_iva')) || 16;
 
-  // Computed products for Autocomplete
+  async onSearchInput() {
+    this.showAutocomplete = true;
+    await this.productService.searchProducts(this.searchQuery);
+  }
+
+  // Computed products for Autocomplete - filtra localmente por nombre, codigo o marca
   get autocompleteResults() {
-    if (!this.searchQuery.trim()) return [];
-    const query = this.searchQuery.toLowerCase();
+    const query = this.searchQuery.trim().toLowerCase();
+    if (!query) return [];
     return this.productService.products()
-      .filter(p => p.name.toLowerCase().includes(query) || p.id.toLowerCase().includes(query))
-      .slice(0, 5); // Max 5 results
+      .filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        (p.codigo && p.codigo.toLowerCase().includes(query)) ||
+        p.marca.toLowerCase().includes(query)
+      )
+      .slice(0, 8);
   }
 
   // Computed products grouped by marca
   get groupedProducts() {
     const products = this.productService.products();
-    const query = this.searchQuery.toLowerCase();
 
-    // Filter first
     const filtered = products.filter(p => {
-      const matchesQuery = p.name.toLowerCase().includes(query) || p.id.toLowerCase().includes(query);
-      const matchesBrand = this.selectedBrand ? p.marca === this.selectedBrand : true;
-      return matchesQuery && matchesBrand;
+      return this.selectedBrand ? p.marca === this.selectedBrand : true;
     });
 
-    // Group by marca
     const grouped: { [marca: string]: Product[] } = {};
     for (const p of filtered) {
       if (!grouped[p.marca]) {
@@ -66,7 +70,6 @@ export class Pos {
       grouped[p.marca].push(p);
     }
 
-    // Convert to array of objects for easier iteration
     return Object.keys(grouped).sort().map(marca => ({
       marca,
       products: grouped[marca]
@@ -79,6 +82,7 @@ export class Pos {
   showIvaModal = false;
   tempIvaPercentage = 0;
   showSuccessModal = false;
+  checkoutError = '';
 
   get cartSubtotal() {
     return this.cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
@@ -96,7 +100,6 @@ export class Pos {
     this.showAutocomplete = true;
   }
 
-  // To allow click on autocomplete item before blur hides it
   onSearchBlur() {
     setTimeout(() => {
       this.showAutocomplete = false;
@@ -105,12 +108,14 @@ export class Pos {
 
   executeSearch() {
     this.showAutocomplete = false;
+    this.productService.searchProducts(this.searchQuery);
   }
 
   selectAutocompleteItem(product: Product) {
     this.addToCart(product);
-    this.searchQuery = ''; // Clear search after adding
+    this.searchQuery = '';
     this.showAutocomplete = false;
+    this.productService.loadProducts();
   }
 
   addToCart(product: Product) {
@@ -146,33 +151,46 @@ export class Pos {
     this.cart.splice(index, 1);
   }
 
-  checkout() {
+  async checkout() {
     if (this.cart.length === 0) return;
 
-    // Subtract stock from products
-    for (const item of this.cart) {
-      this.productService.updateProduct({
-        ...item.product,
-        stock: item.product.stock - item.quantity
-      });
-    }
+    this.checkoutError = '';
 
-    // Register sale in history
+    // NOTE: NO llamamos productService.updateProduct() aqui porque el backend
+    // ya descuenta el stock automaticamente al registrar la venta (VentaService.registrarVenta).
+    // Llamar updateProduct() ademas del addSale() causaria doble deduccion de stock.
+
     const currentUser = this.authService.currentUser();
 
-    this.saleService.addSale({
-      items: [...this.cart],  // Clone cart
-      subtotal: this.cartSubtotal,
-      tax: this.cartTax,
-      total: this.cartTotal,
-      sellerName: currentUser?.name || 'Desconocido',
-      sellerRole: currentUser?.role === 'admin' ? 'Coordinador' : (currentUser?.role === 'administrator' ? 'Administrador' : 'Empleado')
-    });
+    try {
+      await this.saleService.addSale({
+        items: this.cart.map(item => ({
+          product: item.product,
+          quantity: item.quantity
+        })),
+        subtotal: this.cartSubtotal,
+        tax: this.cartTax,
+        total: this.cartTotal,
+        sellerName: currentUser?.name || 'Desconocido',
+        sellerRole: currentUser?.role === 'admin' ? 'Coordinador' : (currentUser?.role === 'administrator' ? 'Administrador' : 'Empleado')
+      });
 
-    this.showSuccessModal = true;
-    this.cart = [];
-    this.searchQuery = '';
-    this.showAutocomplete = false;
+      // Recargar productos del backend para mostrar el stock actualizado
+      await this.productService.loadProducts();
+
+      this.showSuccessModal = true;
+      this.cart = [];
+      this.searchQuery = '';
+      this.showAutocomplete = false;
+
+    } catch (error: any) {
+      console.error('Error en checkout:', error);
+      if (error?.error?.message) {
+        this.checkoutError = error.error.message;
+      } else {
+        this.checkoutError = 'Error al procesar la venta. Intente nuevamente.';
+      }
+    }
   }
 
   closeSuccessModal() {
@@ -184,7 +202,7 @@ export class Pos {
   }
 
   editIcon(marca: string) {
-    const newIcon = prompt(`Ingresa un nuevo emoji para la categoría "${marca}":`, this.getIcon(marca));
+    const newIcon = prompt(`Ingresa un nuevo emoji para la categoria "${marca}":`, this.getIcon(marca));
     if (newIcon && newIcon.trim() !== '') {
       this.iconService.updateIcon(marca, newIcon.trim());
     }

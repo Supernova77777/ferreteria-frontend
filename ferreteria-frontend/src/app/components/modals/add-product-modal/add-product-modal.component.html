@@ -52,9 +52,11 @@
         </div>
 
         <div class="modal-footer">
+            <div *ngIf="errorMsg" style="color: #fca5a5; font-size: 0.85rem; margin-bottom: 0.5rem; text-align:left; width:100%;">⚠️ {{ errorMsg }}</div>
             <button class="btn-text" (click)="close()">Cancelar</button>
-            <button class="btn-primary" (click)="save()">{{ editProduct ? 'Actualizar Producto' : 'Guardar Producto'
-                }}</button>
+            <button class="btn-primary" (click)="save()" [disabled]="isSaving">
+                {{ isSaving ? 'Guardando...' : (editProduct ? 'Actualizar Producto' : 'Guardar Producto') }}
+            </button>
         </div>
     </div>
 </div>

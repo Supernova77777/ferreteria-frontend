@@ -58,7 +58,7 @@
                         <button class="edit-btn" (click)="editUser(user)">
                             ✏️ Editar
                         </button>
-                        <button class="delete-btn" (click)="deleteUser(user.username)"
+                        <button class="delete-btn" (click)="confirmDeleteUser(user)"
                             *ngIf="user.username !== 'admin'">
                             🗑️ Eliminar
                         </button>
@@ -112,6 +112,27 @@
             <button class="cancel-btn" (click)="closeUserModal()">Cancelar</button>
             <button class="save-btn" (click)="saveUser()">{{ isEditing() ? 'Guardar Cambios' : 'Crear Usuario'
                 }}</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmacion de eliminacion de usuario -->
+<div class="modal-overlay" *ngIf="showDeleteModal()" (click)="cancelDeleteUser()">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 420px;">
+        <div class="modal-header">
+            <h2>🗑️ Eliminar Usuario</h2>
+            <button class="close-btn" (click)="cancelDeleteUser()">x</button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+            <p style="margin: 0; font-size: 1rem; color: #e2e8f0;">
+                Esta seguro que desea eliminar al usuario
+                <strong style="color: #ff6b00;">{{ userToDelete()?.name || userToDelete()?.username }}</strong>?
+            </p>
+            <p style="margin: 0.5rem 0 0; font-size: 0.85rem; color: #94a3b8;">Esta accion no se puede deshacer.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="cancel-btn" (click)="cancelDeleteUser()">Cancelar</button>
+            <button class="save-btn" style="background: #ef4444;" (click)="executeDeleteUser()">Eliminar</button>
         </div>
     </div>
 </div>

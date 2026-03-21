@@ -23,23 +23,30 @@ export class Inventory {
   selectedMarca: string = 'todas';
   searchQuery: string = '';
 
+  // Modal de confirmacion de eliminacion
+  showDeleteModal = false;
+  productToDelete: Product | null = null;
+
   get marcasDisponibles() {
     return [...new Set(this.products().map(p => p.marca))].sort();
   }
 
+  // Filtra localmente por texto y marca de forma instantanea
   get filteredProducts() {
     let result = this.products();
+    const query = this.searchQuery.trim().toLowerCase();
+
+    if (query) {
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        (p.codigo && p.codigo.toLowerCase().includes(query)) ||
+        p.marca.toLowerCase().includes(query) ||
+        String(p.id).toLowerCase().includes(query)
+      );
+    }
 
     if (this.selectedMarca !== 'todas') {
       result = result.filter(p => p.marca === this.selectedMarca);
-    }
-
-    if (this.searchQuery.trim() !== '') {
-      const query = this.searchQuery.toLowerCase();
-      result = result.filter(p =>
-        p.name.toLowerCase().includes(query) ||
-        p.id.toLowerCase().includes(query)
-      );
     }
 
     return result;
@@ -50,15 +57,29 @@ export class Inventory {
     this.showModal = true;
   }
 
-  closeModal() {
+  async onCloseModal() {
     this.showModal = false;
     this.productToEdit = null;
+    // Recargar productos del backend para reflejar los cambios
+    await this.productService.loadProducts();
   }
 
-  deleteProduct(id: string) {
-    if (confirm('¿Está seguro de eliminar este producto?')) {
-      this.productService.deleteProduct(id);
-    }
+  confirmDeleteProduct(product: Product) {
+    this.productToDelete = product;
+    this.showDeleteModal = true;
+  }
+
+  cancelDeleteProduct() {
+    this.productToDelete = null;
+    this.showDeleteModal = false;
+  }
+
+  async executeDeleteProduct() {
+    const p = this.productToDelete;
+    this.showDeleteModal = false;
+    this.productToDelete = null;
+    if (!p) return;
+    await this.productService.deleteProduct(p.id);
   }
 
   descargarInventario() {

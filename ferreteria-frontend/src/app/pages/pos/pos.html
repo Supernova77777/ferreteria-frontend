@@ -3,7 +3,7 @@
         <div class="search-bar">
             <div class="search-input-group">
                 <input type="text" placeholder="Buscar producto..." [(ngModel)]="searchQuery" (focus)="onSearchFocus()"
-                    (blur)="onSearchBlur()" autocomplete="off" />
+                    (blur)="onSearchBlur()" (input)="onSearchInput()" autocomplete="off" />
                 <button type="button" class="btn-primary search-btn" (click)="executeSearch()"
                     title="Buscar">🔍</button>
             </div>
@@ -97,6 +97,9 @@
             <div class="summary-row total">
                 <span>Total</span>
                 <span>${{ cartTotal | number:'1.2-2' }}</span>
+            </div>
+            <div *ngIf="checkoutError" class="error-message" style="margin-bottom: 0.75rem; padding: 0.6rem 1rem; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); border-radius: 8px; color: #fca5a5; font-size: 0.85rem;">
+                ⚠️ {{ checkoutError }}
             </div>
             <button type="button" class="btn-primary checkout-btn" [disabled]="cart.length === 0"
                 (click)="checkout()">Cobrar</button>

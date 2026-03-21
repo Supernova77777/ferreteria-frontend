@@ -2,10 +2,10 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Product } from './product.service';
 import { firstValueFrom } from 'rxjs';
-import PizZip from 'pizzip';
-import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
 import * as ExcelJS from 'exceljs';
+import PizZip from 'pizzip';
+import Docxtemplater from 'docxtemplater';
 
 export interface SaleItem {
     product: Product;
@@ -27,58 +27,59 @@ export interface Sale {
     providedIn: 'root'
 })
 export class SaleService {
-    private salesKey = 'ferreteria_sales';
-    sales = signal<Sale[]>(this.loadSales());
+    private apiUrl = 'http://localhost:8080/api/ventas';
+    sales = signal<Sale[]>([]);
 
-    constructor(private http: HttpClient) { }
-
-    private loadSales(): Sale[] {
-        const stored = localStorage.getItem(this.salesKey);
-        if (stored) {
-            try {
-                const parsed = JSON.parse(stored);
-                // Convert string dates back to Date objects
-                return parsed.map((s: any) => ({
-                    ...s,
-                    date: new Date(s.date)
-                }));
-            } catch (e) {
-                console.error('Error parsing sales from localStorage', e);
-                return [];
-            }
-        }
-        return [];
+    constructor(private http: HttpClient) {
+        this.loadSales();
     }
 
-    addSale(saleData: Omit<Sale, 'id' | 'date'>) {
-        const newSale: Sale = {
-            ...saleData,
-            id: 'VTA-' + Math.floor(Math.random() * 1000000).toString().padStart(6, '0'),
-            date: new Date()
-        };
+    async loadSales() {
+        try {
+            const data = await firstValueFrom(this.http.get<Sale[]>(this.apiUrl));
+            // Asegurarse de convertir string a Date
+            const formatted = data.map(s => ({
+                ...s,
+                date: new Date(s.date)
+            }));
+            this.sales.set(formatted);
+        } catch (error) {
+            console.error('Error cargando ventas', error);
+        }
+    }
 
-        const currentSales = this.sales();
-        const updatedSales = [newSale, ...currentSales];
+    async addSale(saleData: Omit<Sale, 'id' | 'date'>) {
+        try {
+            const newSale = await firstValueFrom(this.http.post<Sale>(this.apiUrl, saleData));
+            const formatted = { ...newSale, date: new Date(newSale.date) };
 
-        this.sales.set(updatedSales);
-        localStorage.setItem(this.salesKey, JSON.stringify(updatedSales));
-
-        return newSale;
+            const currentSales = this.sales();
+            this.sales.set([formatted, ...currentSales]);
+            return formatted;
+        } catch (error: any) {
+            console.error('Error agregando venta', error);
+            if (error.error && error.error.message) {
+                alert('Error al registrar venta: ' + error.error.message);
+            }
+            throw error;
+        }
     }
 
     getSales(): Sale[] {
         return this.sales();
     }
 
-    clearSales() {
-        this.sales.set([]);
-        localStorage.removeItem(this.salesKey);
+    async clearSales() {
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/clear`));
+            this.sales.set([]);
+        } catch (error: any) {
+            console.error('Error al borrar el historial de ventas', error);
+            alert('No se pudo vaciar el historial.');
+        }
     }
 
-    // Helper method to convert numbers to Spanish words (simplified version for formatting)
     private numeroALetras(num: number): string {
-        // A simple formatting wrapper for demonstration. A full implementation would turn 100 into "CIEN"
-        // For now, we will format it gracefully as currency string.
         const intPart = Math.floor(num);
         const decPart = Math.round((num - intPart) * 100);
         return `${intPart} PESOS ${decPart.toString().padStart(2, '0')}/100`;
@@ -86,27 +87,13 @@ export class SaleService {
 
     async generarReporteVenta(sale: Sale) {
         try {
-            // Fetch the static template from public/reportes directory
             const url = '/reportes/' + encodeURIComponent('HOJA MEMBRETADA 1.docx');
-            console.log('Fetching template from:', url);
+            const templateBuffer = await firstValueFrom(this.http.get(url, { responseType: 'arraybuffer' }));
+            if (!templateBuffer) throw new Error('Plantilla vacía');
 
-            const templateBuffer = await firstValueFrom(
-                this.http.get(url, { responseType: 'arraybuffer' })
-            );
-
-            if (!templateBuffer) throw new Error('El archivo de la plantilla está vacío o no se encontró.');
-
-            // Load the zip content
             const zip = new PizZip(templateBuffer);
+            const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true, delimiters: { start: '{{', end: '}}' } });
 
-            // Initialize docxtemplater with custom delimiters to support {{tag}}
-            const doc = new Docxtemplater(zip, {
-                paragraphLoop: true,
-                linebreaks: true,
-                delimiters: { start: '{{', end: '}}' }
-            });
-
-            // Map the sale items to an array of objects for the template loop {#productos}
             const productosVendidos = sale.items.map(item => ({
                 cantidad: item.quantity,
                 nombre: item.product.name,
@@ -116,47 +103,23 @@ export class SaleService {
                 fechaCompra: item.product.fechaCompra || ''
             }));
 
-            // Set the data into the template
             doc.render({
                 id_venta: sale.id,
-                fecha: sale.date.toLocaleDateString(),
+                fecha: new Date(sale.date).toLocaleDateString(),
                 vendedor: sale.sellerName,
                 subtotal: sale.subtotal.toFixed(2),
-                subtota: sale.subtotal.toFixed(2), // Fallback para el error de tipeo en la plantilla
+                subtota: sale.subtotal.toFixed(2),
                 iva: sale.tax.toFixed(2),
                 total: sale.total.toFixed(2),
                 total_letras: this.numeroALetras(sale.total),
                 productos: productosVendidos
             });
 
-            // Generate blob
-            const out = doc.getZip().generate({
-                type: 'blob',
-                mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            });
-
-            // Trigger file download
+            const out = doc.getZip().generate({ type: 'blob', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
             saveAs(out, `Reporte_Venta_${sale.id}.docx`);
         } catch (error: any) {
-            console.error('Error al generar el reporte:', error);
-
-            let errorMessage = 'Hubo un error al generar el reporte de Word.';
-
-            if (error.properties && error.properties.errors instanceof Array) {
-                // Formatting Docxtemplater multi-errors
-                const errorDetails = error.properties.errors.map((e: any) => {
-                    return e.properties?.explanation || e.message || 'Error desconocido';
-                }).join('\n');
-
-                errorMessage += '\n\nErrores de formato en la plantilla Word:\n' + errorDetails;
-                console.log('Docxtemplater Error Details:', errorDetails);
-            } else if (error.status === 404) {
-                errorMessage = 'No se encontró la plantilla en /reportes/HOJA MEMBRETADA 1.docx';
-            } else if (error.message) {
-                errorMessage += '\nDetalle: ' + error.message;
-            }
-
-            alert(errorMessage);
+            console.error('Error al generar el reporte Word de venta:', error);
+            alert('Hubo un error al generar la factura Word localmente.');
         }
     }
 
@@ -485,23 +448,18 @@ export class SaleService {
 
     async generarReporteVentaExcel(sale: Sale) {
         try {
-            // Load the Hoja Membretada EXcel.xlsx template
-            const response = await fetch('/reportes/Hoja Membretada EXcel.xlsx');
-            if (!response.ok) throw new Error('No se pudo cargar la plantilla de Excel "Hoja Membretada EXcel.xlsx"');
-
-            const templateBuffer = await response.arrayBuffer();
+            const ExcelJS = await import('exceljs');
+            const url = '/reportes/' + encodeURIComponent('Hoja Membretada EXcel.xlsx');
+            const templateBuffer = await firstValueFrom(this.http.get(url, { responseType: 'arraybuffer' }));
+            
+            if (!templateBuffer) throw new Error('Plantilla vacía');
             const workbook = new ExcelJS.Workbook();
             await workbook.xlsx.load(templateBuffer);
-
             const worksheet = workbook.worksheets[0];
-            if (!worksheet) throw new Error('No se encontró ninguna hoja en el archivo Excel.');
-
-            // The Hoja Membretada template has tags in row 11. 
+            
             let currentRow = 11;
-
-            // Generate headers explicitly in case the template lacks them
-            const headerRow = worksheet.getRow(currentRow - 1);
-            headerRow.getCell(1).value = 'Fecha y Venta';
+            const headerRow = worksheet.getRow(10);
+            headerRow.getCell(1).value = 'Venta';
             headerRow.getCell(3).value = 'Vendedor';
             headerRow.getCell(5).value = 'Cantidad';
             headerRow.getCell(7).value = 'Producto';
@@ -509,85 +467,41 @@ export class SaleService {
             headerRow.getCell(11).value = 'Importe';
             headerRow.getCell(13).value = 'Fecha Compra';
 
-            try { worksheet.mergeCells(currentRow - 1, 3, currentRow - 1, 4); } catch (e) { } // C-D
-            try { worksheet.mergeCells(currentRow - 1, 5, currentRow - 1, 6); } catch (e) { } // E-F
-            try { worksheet.mergeCells(currentRow - 1, 7, currentRow - 1, 8); } catch (e) { } // G-H
-            try { worksheet.mergeCells(currentRow - 1, 9, currentRow - 1, 10); } catch (e) { } // I-J
-            try { worksheet.mergeCells(currentRow - 1, 11, currentRow - 1, 12); } catch (e) { } // K-L
-            try { worksheet.mergeCells(currentRow - 1, 13, currentRow - 1, 14); } catch (e) { } // M-N
-
-            const hBorder: any = { top: { style: 'medium' }, left: { style: 'medium' }, bottom: { style: 'medium' }, right: { style: 'medium' } };
-            const hAlign: any = { vertical: 'middle', horizontal: 'center', wrapText: true };
-            const hFont: any = { name: 'Calibri', size: 12, bold: true };
-            const hFill: any = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF2F2F2' } };
-
-            [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].forEach(colIndex => {
-                const cell = headerRow.getCell(colIndex);
-                cell.border = hBorder; cell.alignment = hAlign; cell.font = hFont; cell.fill = hFill;
-            });
-            headerRow.height = 30;
-            headerRow.commit();
-
             for (const item of sale.items) {
                 const row = worksheet.getRow(currentRow);
+                for (let c = 1; c <= 15; c++) row.getCell(c).value = null;
 
-                // Clear any raw tags that might be in the template cells
-                for (let c = 1; c <= 15; c++) {
-                    row.getCell(c).value = null;
+                row.getCell(1).value = sale.id;
+                row.getCell(3).value = sale.sellerName;
+                row.getCell(5).value = item.quantity;
+                row.getCell(7).value = item.product.name;
+                row.getCell(9).value = Number(item.product.price.toFixed(2));
+                row.getCell(11).value = Number((item.quantity * item.product.price).toFixed(2));
+                row.getCell(13).value = item.product.fechaCompra || '';
+
+                const colsToMerge = [[3,4], [5,6], [7,8], [9,10], [11,12], [13,14]];
+                for (const [start, end] of colsToMerge) {
+                    try { worksheet.mergeCells(currentRow, start, currentRow, end); } catch (e) {}
                 }
 
-                // Write values to specific columns
-                row.getCell(1).value = `${sale.id} - ${new Date(sale.date).toLocaleDateString()}`; // A: ID
-                row.getCell(3).value = sale.sellerName;                 // C
-                row.getCell(5).value = item.quantity;                   // E
-                row.getCell(7).value = item.product.name;               // G
-                row.getCell(9).value = Number(item.product.price.toFixed(2)); // I
-                row.getCell(11).value = Number((item.quantity * item.product.price).toFixed(2)); // K
-                row.getCell(13).value = item.product.fechaCompra || ''; // M
-
-                // Safely apply new horizontal merges per line (1 row tall, 2 cols wide)
-                try { worksheet.mergeCells(currentRow, 3, currentRow, 4); } catch (e) { } // C-D
-                try { worksheet.mergeCells(currentRow, 5, currentRow, 6); } catch (e) { } // E-F
-                try { worksheet.mergeCells(currentRow, 7, currentRow, 8); } catch (e) { } // G-H
-                try { worksheet.mergeCells(currentRow, 9, currentRow, 10); } catch (e) { } // I-J
-                try { worksheet.mergeCells(currentRow, 11, currentRow, 12); } catch (e) { } // K-L
-                try { worksheet.mergeCells(currentRow, 13, currentRow, 14); } catch (e) { } // M-N
-
-                // Apply robust styles explicitly AFTER merging to ensure Excel displays them
-                const borderStyle: any = {
-                    top: { style: 'thin' }, left: { style: 'thin' },
-                    bottom: { style: 'thin' }, right: { style: 'thin' }
-                };
+                const borderStyle: any = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
                 const centerAlign: any = { vertical: 'middle', horizontal: 'center', wrapText: true };
-                const fontStyle: any = { name: 'Calibri', size: 11 };
-
-                // Apply to all columns in the table range to guarantee the border box connects
-                const colsToStyle = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-                colsToStyle.forEach(colIndex => {
+                
+                [1,2,3,4,5,6,7,8,9,10,11,12,13,14].forEach(colIndex => {
                     const cell = row.getCell(colIndex);
-                    cell.border = borderStyle;
-                    cell.alignment = centerAlign;
-                    cell.font = fontStyle;
+                    cell.border = borderStyle; cell.alignment = centerAlign;
+                    cell.font = { name: 'Calibri', size: 11 };
                 });
-
                 row.height = 45;
                 row.commit();
                 currentRow++;
             }
-
-            // Clean up any remaining blank formatted rows the user might have left in their template below the data
-            for (let i = 0; i < 5; i++) {
-                worksheet.spliceRows(currentRow, 1);
-            }
-
             const excelBuffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-            saveAs(blob, `Reporte_Factura_Venta_${sale.id}.xlsx`);
-
+            saveAs(blob, `Recibo_Venta_${sale.id}.xlsx`);
         } catch (error: any) {
-            console.error('Error al generar el reporte Excel de la venta:', error);
-            alert('Hubo un error al generar el reporte de Excel.\nDetalle: ' + (error.message || ''));
+            console.error('Error al generar Excel de Venta:', error);
+            alert('Hubo un error al generar el archivo Excel.');
         }
     }
 }

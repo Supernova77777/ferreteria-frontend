@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -10,25 +10,45 @@ import { CommonModule } from '@angular/common';
     templateUrl: './login.html',
     styleUrl: './login.css'
 })
-export class Login {
+export class Login implements OnInit {
     username = signal('');
     password = signal('');
     errorMessage = signal('');
+    isLoading = signal(false);
 
     constructor(private authService: AuthService) { }
 
-    login() {
+    ngOnInit() {
+        // Limpiamos cualquier sesión residual para que no se muestre el Sidebar general
+        if (this.authService.isLoggedIn()) {
+            this.authService.logout();
+        }
+    }
+
+    async login() {
         if (!this.username() || !this.password()) {
-            this.errorMessage.set('Por favor ingrese usuario y contraseña');
+            this.errorMessage.set('Por favor ingrese usuario y contrasena');
             return;
         }
 
-        const success = this.authService.login(this.username(), this.password());
+        this.errorMessage.set('');
+        this.isLoading.set(true);
 
-        if (!success) {
-            this.errorMessage.set('Credenciales inválidas');
-        } else {
-            this.errorMessage.set('');
+        try {
+            const success = await this.authService.login(this.username(), this.password());
+            if (!success) {
+                this.errorMessage.set('Usuario o contrasena incorrectos');
+            }
+        } catch (error: any) {
+            if (error?.status === 401) {
+                this.errorMessage.set('Usuario o contrasena incorrectos');
+            } else if (error?.status === 0 || error?.status === 503) {
+                this.errorMessage.set('No se pudo conectar con el servidor. Verifique su conexion.');
+            } else {
+                this.errorMessage.set('Error al iniciar sesion. Intente nuevamente.');
+            }
+        } finally {
+            this.isLoading.set(false);
         }
     }
 }

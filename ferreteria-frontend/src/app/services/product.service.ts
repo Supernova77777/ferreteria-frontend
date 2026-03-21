@@ -7,7 +7,7 @@ import { saveAs } from 'file-saver';
 import * as XLSX from 'xlsx';
 
 export interface Product {
-    id: string; // Used internally as unique identifier / barcode if needed, but we'll add user-facing 'codigo'
+    id: string; // Puede ser devuelto como número desde backend pero lo mantendremos as string para interface
     codigo: string;
     name: string;
     marca: string;
@@ -21,68 +21,77 @@ export interface Product {
 })
 export class ProductService {
     products = signal<Product[]>([]);
-    private storageKey = 'ferreteria_products_v2';
+    private apiUrl = 'http://localhost:8080/api/productos';
 
     constructor(private http: HttpClient) {
         this.loadProducts();
     }
 
-    private loadProducts() {
-        const stored = localStorage.getItem(this.storageKey);
-        if (stored) {
-            this.products.set(JSON.parse(stored));
-        } else {
-            // Default mock data
-            const defaultProducts: Product[] = [
-                { id: 'P-001', codigo: 'ART-001', name: 'Martillo Galponero', marca: 'TRUPER', stock: 5, price: 15.00, fechaCompra: '2024-01-15' },
-                { id: 'P-002', codigo: 'ART-002', name: 'Taladro Inalámbrico 18V', marca: 'PRETUL', stock: 12, price: 120.00, fechaCompra: '2024-01-15' },
-                { id: 'P-003', codigo: 'ART-003', name: 'Juego de Llaves Allen', marca: 'FOSET', stock: 25, price: 12.50, fechaCompra: '2024-01-18' },
-                { id: 'P-004', codigo: 'ART-004', name: 'Lija de Agua #100', marca: 'FIERO', stock: 150, price: 0.50, fechaCompra: '2024-02-01' },
-                { id: 'P-005', codigo: 'ART-005', name: 'Pintura Esmalte Sintético 4L', marca: 'HERMEX', stock: 3, price: 45.00, fechaCompra: '2024-02-10' },
-                { id: 'P-006', codigo: 'ART-006', name: 'Cinta Métrica 5m', marca: 'VOLTECK', stock: 20, price: 5.00, fechaCompra: '2024-02-15' },
-                { id: 'P-007', codigo: 'ART-007', name: 'Desarmador Cruz', marca: 'Klintek', stock: 15, price: 2.50, fechaCompra: '2024-03-01' }
-            ];
-            this.products.set(defaultProducts);
-            this.saveToStorage();
+    async loadProducts() {
+        try {
+            const data = await firstValueFrom(this.http.get<Product[]>(this.apiUrl));
+            // Asegurar que el id es string para la UI si el backend devuelve un Long
+            const formatted = data.map(p => ({ ...p, id: String(p.id) }));
+            this.products.set(formatted);
+        } catch (error) {
+            console.error('Error cargando productos', error);
         }
     }
 
-    private saveToStorage() {
-        localStorage.setItem(this.storageKey, JSON.stringify(this.products()));
+    async searchProducts(termino: string) {
+        if (!termino || termino.trim() === '') {
+            await this.loadProducts();
+            return;
+        }
+        try {
+            const data = await firstValueFrom(this.http.get<Product[]>(`${this.apiUrl}/buscar?termino=${termino}`));
+            const formatted = data.map(p => ({ ...p, id: String(p.id) }));
+            this.products.set(formatted);
+        } catch (error) {
+            console.error('Error buscando productos', error);
+        }
     }
 
-    addProduct(product: Omit<Product, 'id'>) {
-        const current = this.products();
-        // Generate pseudo ID
-        const nextIdNumber = current.length > 0 ? Math.max(...current.map(p => parseInt(p.id.split('-')[1] || '0'))) + 1 : 1;
-        const newId = `P-${nextIdNumber.toString().padStart(3, '0')}`;
-
-        const newProduct: Product = { ...product, id: newId };
-        this.products.update(products => [...products, newProduct]);
-        this.saveToStorage();
-    }
-
-    updateProduct(updatedProduct: Product, originalId?: string) {
-        const targetId = originalId || updatedProduct.id;
-
-        // If they are changing the ID, make sure the new ID doesn't already exist
-        if (originalId && originalId !== updatedProduct.id) {
-            const current = this.products();
-            if (current.find(p => p.id === updatedProduct.id)) {
-                return false; // Target ID already exists
+    async addProduct(product: Omit<Product, 'id'>) {
+        try {
+            const newProduct = await firstValueFrom(this.http.post<Product>(this.apiUrl, product));
+            const formatted = { ...newProduct, id: String(newProduct.id) };
+            this.products.update(products => [...products, formatted]);
+        } catch (error: any) {
+            console.error('Error agregando producto', error);
+            if (error.error && error.error.message) {
+                alert('Error: ' + error.error.message);
             }
         }
-
-        this.products.update(products =>
-            products.map(p => p.id === targetId ? updatedProduct : p)
-        );
-        this.saveToStorage();
-        return true;
     }
 
-    deleteProduct(id: string) {
-        this.products.update(products => products.filter(p => p.id !== id));
-        this.saveToStorage();
+    async updateProduct(updatedProduct: Product, originalId?: string) {
+        const targetId = originalId || updatedProduct.id;
+        try {
+            const result = await firstValueFrom(this.http.put<Product>(`${this.apiUrl}/${targetId}`, updatedProduct));
+            const formatted = { ...result, id: String(result.id) };
+            
+            this.products.update(products =>
+                products.map(p => p.id === targetId ? formatted : p)
+            );
+            return true;
+        } catch (error: any) {
+            console.error('Error actualizando producto', error);
+            if (error.error && error.error.message) {
+                alert('Error: ' + error.error.message);
+            }
+            return false;
+        }
+    }
+
+    async deleteProduct(id: string) {
+        try {
+            await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`));
+            this.products.update(products => products.filter(p => p.id !== id));
+        } catch (error) {
+            console.error('Error eliminando producto', error);
+            alert('Error al eliminar el producto.');
+        }
     }
 
     async generarReporteInventario(marcaFiltrada?: string) {

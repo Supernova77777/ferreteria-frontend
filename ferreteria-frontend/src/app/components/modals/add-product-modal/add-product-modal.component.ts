@@ -15,14 +15,16 @@ export class AddProductModalComponent implements OnInit {
     @Output() closeModal = new EventEmitter<void>();
 
     productService = inject(ProductService);
+    isSaving = false;
+    errorMsg = '';
 
     productForm: Partial<Product> & { codigo: string, name: string, marca: string, price: number, stock: number, fechaCompra: string } = {
         codigo: '',
         name: '',
-        marca: 'TRUPER', // default
+        marca: 'TRUPER',
         price: 0,
         stock: 0,
-        fechaCompra: new Date().toISOString().split('T')[0] // default to today
+        fechaCompra: new Date().toISOString().split('T')[0]
     };
 
     ngOnInit() {
@@ -43,19 +45,33 @@ export class AddProductModalComponent implements OnInit {
         this.closeModal.emit();
     }
 
-    save() {
-        if (this.editProduct) {
-            const success = this.productService.updateProduct(
-                { ...this.productForm, id: this.productForm.id || this.editProduct.id } as Product,
-                this.editProduct.id
-            );
-            if (!success) {
-                alert('El Código de Producto ingresado ya está en uso.');
-                return;
-            }
-        } else {
-            this.productService.addProduct(this.productForm);
+    async save() {
+        if (!this.productForm.name || !this.productForm.marca) {
+            this.errorMsg = 'El nombre y la marca son obligatorios.';
+            return;
         }
-        this.close();
+
+        this.isSaving = true;
+        this.errorMsg = '';
+
+        try {
+            if (this.editProduct) {
+                const success = await this.productService.updateProduct(
+                    { ...this.productForm, id: this.productForm.id || this.editProduct.id } as Product,
+                    this.editProduct.id
+                );
+                if (!success) {
+                    this.errorMsg = 'Error al actualizar el producto. Verifique los datos.';
+                    return;
+                }
+            } else {
+                await this.productService.addProduct(this.productForm);
+            }
+            this.close();
+        } catch (e: any) {
+            this.errorMsg = e?.error?.message || 'Error al guardar el producto.';
+        } finally {
+            this.isSaving = false;
+        }
     }
 }

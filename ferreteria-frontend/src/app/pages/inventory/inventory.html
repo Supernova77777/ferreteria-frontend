@@ -3,8 +3,8 @@
     <div class="header-actions" style="display: flex; gap: 10px; align-items: center;">
         <div class="report-group"
             style="display: flex; align-items: center; background-color: #1e1e1e; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
-            <input type="text" [(ngModel)]="searchQuery" placeholder="🔍 Buscar código o nombre..."
-                class="search-input" />
+            <input type="text" [(ngModel)]="searchQuery"
+                placeholder="🔍 Buscar código o nombre..." class="search-input" />
             <select [(ngModel)]="selectedMarca"
                 style="background-color: transparent; color: #e2e8f0; border: none; padding: 10px; font-size: 0.9rem; outline: none; cursor: pointer;">
                 <option value="todas" style="background-color: #1e1e1e;">Todas las Marcas</option>
@@ -31,7 +31,7 @@
 </div>
 
 <app-add-product-modal *ngIf="showModal" [editProduct]="productToEdit"
-    (closeModal)="closeModal()"></app-add-product-modal>
+    (closeModal)="onCloseModal()"></app-add-product-modal>
 
 <div class="card">
     <div class="table-container">
@@ -63,10 +63,36 @@
                     <td>{{ product.fechaCompra || 'N/A' }}</td>
                     <td *ngIf="isAdmin()">
                         <button class="action-btn" (click)="openModal(product)">✏️</button>
-                        <button class="action-btn delete" (click)="deleteProduct(product.id)">🗑️</button>
+                        <button class="action-btn delete" (click)="confirmDeleteProduct(product)">🗑️</button>
                     </td>
                 </tr>
             </tbody>
         </table>
+    </div>
+</div>
+
+<!-- Modal de confirmacion de eliminacion de producto -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDeleteProduct()"
+    style="position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:1000;">
+    <div (click)="$event.stopPropagation()"
+        style="background:#1e1e2e;border-radius:12px;padding:0;width:420px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.1);">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:1.25rem 1.5rem;border-bottom:1px solid rgba(255,255,255,0.1);">
+            <h2 style="margin:0;font-size:1.1rem;color:#fff;">🗑️ Eliminar Producto</h2>
+            <button (click)="cancelDeleteProduct()"
+                style="background:none;border:none;color:#94a3b8;font-size:1.3rem;cursor:pointer;">×</button>
+        </div>
+        <div style="padding:1.5rem;">
+            <p style="margin:0;font-size:1rem;color:#e2e8f0;">
+                Esta seguro que desea eliminar
+                <strong style="color:#ff6b00;">{{ productToDelete?.name }}</strong>?
+            </p>
+            <p style="margin:0.5rem 0 0;font-size:0.85rem;color:#94a3b8;">Esta accion no se puede deshacer.</p>
+        </div>
+        <div style="display:flex;justify-content:flex-end;gap:0.75rem;padding:1rem 1.5rem;border-top:1px solid rgba(255,255,255,0.08);">
+            <button (click)="cancelDeleteProduct()"
+                style="background:transparent;border:1px solid rgba(255,255,255,0.2);color:#e2e8f0;padding:0.6rem 1.25rem;border-radius:8px;cursor:pointer;font-size:0.9rem;">Cancelar</button>
+            <button (click)="executeDeleteProduct()"
+                style="background:#ef4444;border:none;color:white;padding:0.6rem 1.25rem;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:600;">Eliminar</button>
+        </div>
     </div>
 </div>

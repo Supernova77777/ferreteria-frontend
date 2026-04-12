@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { API_BASE } from '../../config/api.base';
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
 import { saveAs } from 'file-saver';
@@ -22,7 +23,7 @@ export interface Product {
 })
 export class ProductService {
     products = signal<Product[]>([]);
-    private apiUrl = 'http://localhost:8081/api/productos';
+    private apiUrl = `${API_BASE}/productos`;
 
     constructor(private http: HttpClient) {
         this.loadProducts();

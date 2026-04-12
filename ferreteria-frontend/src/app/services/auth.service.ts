@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { API_BASE } from '../../config/api.base';
 
 export type UserRole = 'admin' | 'administrator' | 'employee' | null;
 
@@ -19,7 +20,7 @@ export interface User {
 })
 export class AuthService {
     currentUser = signal<User | null>(null);
-    private apiUrl = 'http://localhost:8081/api/auth';
+    private apiUrl = `${API_BASE}/auth`;
 
     constructor(private router: Router, private http: HttpClient) {
         this.initializeUserSession();

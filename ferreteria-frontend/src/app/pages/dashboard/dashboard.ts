@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { SaleService } from '../../services/sale.service';
 import { ProductService } from '../../services/product.service';
+import { API_BASE } from '../../../config/api.base';
 
 @Component({
   selector: 'app-dashboard',
@@ -74,7 +75,7 @@ export class Dashboard {
 
     if (this.selectedBrand === 'Todas') {
       try {
-        const response = await fetch('http://localhost:8080/api/ventas/dashboard');
+        const response = await fetch(`${API_BASE}/ventas/dashboard`);
         const data = await response.json();
 
         const labels = data.map((d: any) => d.dia);

@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { SaleService } from '../../services/sale.service';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
+import { API_BASE } from '../../../config/api.base';
 
 @Component({
   selector: 'app-pos',
@@ -144,7 +145,7 @@ export class Pos {
 
   private async fetchCrossSellingSuggestion(productId: string) {
     try {
-      const endpoint = `http://localhost:8080/api/ai/cross-selling/${productId}`;
+      const endpoint = `${API_BASE}/ai/cross-selling/${productId}`;
       const rec = await firstValueFrom(this.http.get<Product>(endpoint));
       if (rec && rec.name) {
          this.crossSellingSuggestion = rec;

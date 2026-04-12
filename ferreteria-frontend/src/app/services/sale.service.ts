@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Product } from './product.service';
 import { firstValueFrom } from 'rxjs';
+import { API_BASE } from '../../config/api.base';
 import { saveAs } from 'file-saver';
 import * as ExcelJS from 'exceljs';
 import PizZip from 'pizzip';
@@ -27,7 +28,7 @@ export interface Sale {
     providedIn: 'root'
 })
 export class SaleService {
-    private apiUrl = 'http://localhost:8081/api/ventas';
+    private apiUrl = `${API_BASE}/ventas`;
     sales = signal<Sale[]>([]);
 
     constructor(private http: HttpClient) {

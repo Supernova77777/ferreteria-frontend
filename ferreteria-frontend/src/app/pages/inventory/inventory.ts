@@ -26,6 +26,8 @@ export class Inventory {
   // Modal de confirmacion de eliminacion
   showDeleteModal = false;
   productToDelete: Product | null = null;
+  isDeleting = false;
+  deleteErrorMsg = '';
 
   get marcasDisponibles() {
     return [...new Set(this.products().map(p => p.marca))].sort();
@@ -67,19 +69,29 @@ export class Inventory {
   confirmDeleteProduct(product: Product) {
     this.productToDelete = product;
     this.showDeleteModal = true;
+    this.deleteErrorMsg = '';
+    this.isDeleting = false;
   }
 
   cancelDeleteProduct() {
     this.productToDelete = null;
     this.showDeleteModal = false;
+    this.deleteErrorMsg = '';
+    this.isDeleting = false;
   }
 
   async executeDeleteProduct() {
-    const p = this.productToDelete;
-    this.showDeleteModal = false;
-    this.productToDelete = null;
-    if (!p) return;
-    await this.productService.deleteProduct(p.id);
+    if (!this.productToDelete) return;
+    this.isDeleting = true;
+    this.deleteErrorMsg = '';
+    try {
+      await this.productService.deleteProduct(this.productToDelete.id);
+      this.cancelDeleteProduct(); // success: close and clear
+    } catch (e: any) {
+      this.deleteErrorMsg = e.message;
+    } finally {
+      this.isDeleting = false;
+    }
   }
 
   descargarInventario() {

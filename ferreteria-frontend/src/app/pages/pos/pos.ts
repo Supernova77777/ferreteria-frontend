@@ -1,10 +1,12 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ProductService, Product } from '../../services/product.service';
 import { MarcaIconService } from '../../services/marca-icon.service';
 import { AuthService } from '../../services/auth.service';
 import { SaleService } from '../../services/sale.service';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-pos',
@@ -18,6 +20,10 @@ export class Pos {
   iconService = inject(MarcaIconService);
   authService = inject(AuthService);
   saleService = inject(SaleService);
+  http = inject(HttpClient);
+  cdr = inject(ChangeDetectorRef);
+
+  crossSellingSuggestion: Product | null = null;
 
   searchQuery = '';
   showAutocomplete = false;
@@ -121,6 +127,8 @@ export class Pos {
   addToCart(product: Product) {
     if (product.stock <= 0) return;
 
+    this.crossSellingSuggestion = null;
+
     const existing = this.cart.find(i => i.product.id === product.id);
     if (existing) {
       if (existing.quantity < product.stock) {
@@ -128,6 +136,29 @@ export class Pos {
       }
     } else {
       this.cart.push({ product, quantity: 1 });
+    }
+
+    // Ejecutar petición en segundo plano para no bloquear a la cajera
+    this.fetchCrossSellingSuggestion(product.id);
+  }
+
+  private async fetchCrossSellingSuggestion(productId: string) {
+    try {
+      const endpoint = `http://localhost:8080/api/ai/cross-selling/${productId}`;
+      const rec = await firstValueFrom(this.http.get<Product>(endpoint));
+      if (rec && rec.name) {
+         this.crossSellingSuggestion = rec;
+         this.cdr.detectChanges();
+      }
+    } catch (e) {
+      // Silenciar error (ej. 404 si no hay recomendación)
+    }
+  }
+
+  addSuggestedToCart() {
+    if (this.crossSellingSuggestion) {
+      this.addToCart(this.crossSellingSuggestion);
+      this.crossSellingSuggestion = null; // Hide after adding
     }
   }
 

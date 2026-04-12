@@ -7,10 +7,26 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="imagenes/icono.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="manifest" href="manifest.webmanifest">
 </head>
+<script>
+  // Bloquear el clic derecho (menú contextual)
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // Bloquear combinaciones de teclas calientes para inspeccionar
+  document.onkeydown = function (e) {
+    if (e.keyCode == 123) { return false; } // Bloquea F12
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; } // Bloquea Ctrl+Shift+I
+    if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { return false; } // Bloquea Ctrl+Shift+J
+    if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; } // Bloquea Ctrl+U (Ver código fuente)
+  }
+</script>
 
 <body>
   <app-root></app-root>
+  <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>
 
 </html>

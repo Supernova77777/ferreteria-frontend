@@ -22,6 +22,11 @@
             </div>
 
             <div class="form-group">
+                <label>Unidad de Entrada</label>
+                <input type="text" placeholder="Ej. PZA, CAJA" [(ngModel)]="productForm.unidadEntrada" />
+            </div>
+
+            <div class="form-group">
                 <label>Marca</label>
                 <select [(ngModel)]="productForm.marca">
                     <option value="TRUPER">TRUPER</option>

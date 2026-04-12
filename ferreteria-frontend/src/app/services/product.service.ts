@@ -14,6 +14,7 @@ export interface Product {
     stock: number;
     price: number;
     fechaCompra: string;
+    unidadEntrada?: string;
 }
 
 @Injectable({
@@ -88,9 +89,10 @@ export class ProductService {
         try {
             await firstValueFrom(this.http.delete(`${this.apiUrl}/${id}`));
             this.products.update(products => products.filter(p => p.id !== id));
-        } catch (error) {
+            return true;
+        } catch (error: any) {
             console.error('Error eliminando producto', error);
-            alert('Error al eliminar el producto.');
+            throw new Error(error?.error?.message || 'No se puede eliminar un producto que cuenta con historial de ventas o transacciones previas.');
         }
     }
 
@@ -133,7 +135,8 @@ export class ProductService {
                 categoria: p.marca, // Fallback for the old DOCX template
                 stock: p.stock,
                 precio: p.price.toFixed(2),
-                fechaCompra: p.fechaCompra || ''
+                fechaCompra: p.fechaCompra || '',
+                unidad_entrada: p.unidadEntrada || ''
             }));
 
             // Set data
@@ -209,80 +212,77 @@ export class ProductService {
             // Start inserting AT row 12
             let currentRow = 12;
 
-            // Explicitly set column widths so text doesn't forcefully wrap in narrow columns
+            worksheet.getColumn(1).width = 15; // Clave
             worksheet.getColumn(2).width = 30; // Producto
-            worksheet.getColumn(3).width = 15; // Marca
-            worksheet.getColumn(4).width = 15; // Precio
-            worksheet.getColumn(5).width = 15; // Stock
-            worksheet.getColumn(6).width = 20; // Código
-            worksheet.getColumn(7).width = 20; // Fecha Compra
+            worksheet.getColumn(4).width = 15; // Marca
+            worksheet.getColumn(5).width = 15; // Unidad
+            worksheet.getColumn(6).width = 15; // Stock
+            worksheet.getColumn(8).width = 15; // Precio
+            worksheet.getColumn(9).width = 15; // Fecha Compra
+            worksheet.getColumn(10).width = 20;// Existencias Fisicas
 
-            // Capture the style of the template row to duplicate it (B, D, E, F as they correspond to the visible columns in the template)
+            // Capture the style of the template row to duplicate it
             const templateRowStyle = worksheet.getRow(12);
-            const styles = {
-                B: Object.assign({}, templateRowStyle.getCell(2).style, { alignment: { vertical: 'middle', horizontal: 'center', wrapText: false } }),
-                D: Object.assign({}, templateRowStyle.getCell(4).style, { alignment: { vertical: 'middle', horizontal: 'center', wrapText: false } }),
-                E: Object.assign({}, templateRowStyle.getCell(5).style, { alignment: { vertical: 'middle', horizontal: 'center', wrapText: false } }),
-                F: Object.assign({}, templateRowStyle.getCell(6).style, { alignment: { vertical: 'middle', horizontal: 'center', wrapText: false } })
-            };
+            const baseStyle = Object.assign({}, templateRowStyle.getCell(2).style, { alignment: { vertical: 'middle', horizontal: 'center', wrapText: true } });
 
-            // Add headers for the new columns at row 11 (template header row)
+            // Ensure headers in row 11 exist and have style
             const headerRow = worksheet.getRow(11);
-            if (!headerRow.getCell(8).value) headerRow.getCell(8).value = 'Código';
-            if (!headerRow.getCell(9).value) headerRow.getCell(9).value = 'Fecha Compra';
-            headerRow.getCell(8).style = headerRow.getCell(6).style; // Copy stock header style
-            headerRow.getCell(9).style = headerRow.getCell(6).style;
+            headerRow.getCell(1).value = 'Clave';
+            headerRow.getCell(2).value = 'Descripción';
+            headerRow.getCell(4).value = 'Línea';
+            headerRow.getCell(5).value = 'Unidad de Entrada';
+            headerRow.getCell(6).value = 'Existencias';
+            headerRow.getCell(8).value = 'Precio';
+            headerRow.getCell(9).value = 'Fecha Compra';
+            headerRow.getCell(10).value = 'Existencias Físicas';
+            
+            for (let i = 1; i <= 10; ++i) {
+                 if (headerRow.getCell(i).value) {
+                     headerRow.getCell(i).style = baseStyle;
+                 }
+            }
+
+            // Merges headers
+            try {
+                if (!worksheet.getCell('B11').isMerged) worksheet.mergeCells('B11:C11');
+                if (!worksheet.getCell('F11').isMerged) worksheet.mergeCells('F11:G11');
+            } catch (e) {}
 
             for (const p of inventarioActual) {
-                // Insert a new row, shifting others down
-                // This prevents overwriting other parts of the template below
                 const rowValues: any = [];
-                rowValues[2] = p.name;               // B: Producto (merged with C)
-                rowValues[4] = p.marca;              // D: Marca
-                rowValues[5] = Number(p.price.toFixed(2)); // E: Precio
-                rowValues[6] = p.stock;              // F: Stock (merged with G)
-                rowValues[8] = p.codigo || '';       // H: Código
+                rowValues[1] = p.codigo || '';       // A: Clave
+                rowValues[2] = p.name;               // B: Descripción (merged with C)
+                rowValues[4] = p.marca;              // D: Línea
+                rowValues[5] = p.unidadEntrada || '';// E: Unidad de Entrada
+                rowValues[6] = p.stock;              // F: Existencias (merged with G)
+                rowValues[8] = Number(p.price.toFixed(2)); // H: Precio
                 rowValues[9] = p.fechaCompra || '';  // I: Fecha Compra
+                rowValues[10] = '';                  // J: Existencias Físicas
 
                 const row = worksheet.insertRow(currentRow, rowValues);
 
-                // Merges for the template structure. Wrap in try-catch because `insertRow` might inherit merges automatically from the template row.
+                // Merges for the data row
                 try {
-                    // Check if already merged to avoid error
                     const cellB = worksheet.getCell(`B${currentRow}`);
-                    if (!cellB.isMerged) {
-                        worksheet.mergeCells(`B${currentRow}:C${currentRow}`);
-                    }
-                } catch (e) { console.warn('B-C Merge skipped:', e); }
+                    if (!cellB.isMerged) worksheet.mergeCells(`B${currentRow}:C${currentRow}`);
+                } catch (e) { }
 
                 try {
                     const cellF = worksheet.getCell(`F${currentRow}`);
-                    if (!cellF.isMerged) {
-                        worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
-                    }
-                } catch (e) { console.warn('F-G Merge skipped:', e); }
+                    if (!cellF.isMerged) worksheet.mergeCells(`F${currentRow}:G${currentRow}`);
+                } catch (e) { }
 
-                // Apply the extracted styles to ALL cells involved in the merge
-                // B is merged with C, F is merged with G. Both need styles (borders specifically) 
-                // to render the full box.
-                row.getCell(2).style = styles.B; // B
-                row.getCell(3).style = styles.B; // C (copy B's style for the right border of the merge)
-
-                row.getCell(4).style = styles.D; // D
-                row.getCell(5).style = styles.E; // E
-
-                row.getCell(6).style = styles.F; // F
-                row.getCell(7).style = styles.F; // G (copy F's style for the right border of the merge)
-
-                // Style new columns
-                row.getCell(8).style = styles.F; // H
-                row.getCell(9).style = styles.F; // I
+                // Apply styles to all cells
+                for (let i = 1; i <= 10; ++i) {
+                     row.getCell(i).style = baseStyle;
+                }
 
                 row.commit();
                 currentRow++;
             }
 
-            // Since we inserted rows, the original template row (with the {#productos} tags)
+            // Since we inserted rows, the original template row got pushed down
+
             // got pushed down to `currentRow`. We should delete it.
             worksheet.spliceRows(currentRow, 1);
 

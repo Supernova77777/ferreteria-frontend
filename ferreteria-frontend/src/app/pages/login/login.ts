@@ -41,7 +41,7 @@ export class Login implements OnInit {
             }
         } catch (error: any) {
             if (error?.status === 401) {
-                this.errorMessage.set('Usuario o contrasena incorrectos');
+                this.errorMessage.set(error.error?.message || 'Usuario o contrasena incorrectos');
             } else if (error?.status === 0 || error?.status === 503) {
                 this.errorMessage.set('No se pudo conectar con el servidor. Verifique su conexion.');
             } else {

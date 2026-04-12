@@ -92,7 +92,15 @@ export class AuthService {
         return true;
     }
 
-    logout() {
+    async logout() {
+        const current = this.currentUser();
+        if (current && current.id) {
+            try {
+                await firstValueFrom(this.http.post(`${this.apiUrl}/logout/${current.id}`, {}));
+            } catch(e) {
+                console.error("Error logging out from backend", e);
+            }
+        }
         this.currentUser.set(null);
         localStorage.removeItem('ferreteria_current_user');
         this.router.navigate(['/login']);

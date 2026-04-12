@@ -18,13 +18,14 @@ export class AddProductModalComponent implements OnInit {
     isSaving = false;
     errorMsg = '';
 
-    productForm: Partial<Product> & { codigo: string, name: string, marca: string, price: number, stock: number, fechaCompra: string } = {
+    productForm: Partial<Product> & { codigo: string, name: string, marca: string, price: number, stock: number, fechaCompra: string, unidadEntrada: string } = {
         codigo: '',
         name: '',
         marca: 'TRUPER',
         price: 0,
         stock: 0,
-        fechaCompra: new Date().toISOString().split('T')[0]
+        fechaCompra: new Date().toISOString().split('T')[0],
+        unidadEntrada: ''
     };
 
     ngOnInit() {
@@ -36,7 +37,8 @@ export class AddProductModalComponent implements OnInit {
                 marca: this.editProduct.marca,
                 price: this.editProduct.price,
                 stock: this.editProduct.stock,
-                fechaCompra: this.editProduct.fechaCompra || ''
+                fechaCompra: this.editProduct.fechaCompra || '',
+                unidadEntrada: this.editProduct.unidadEntrada || ''
             };
         }
     }

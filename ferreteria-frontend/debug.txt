@@ -1,2 +1,0 @@
-Row 11 has cell B11 border: {}
-Row 12 has cell B12 border: {}

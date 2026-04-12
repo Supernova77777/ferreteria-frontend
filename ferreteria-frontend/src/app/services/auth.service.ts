@@ -19,7 +19,7 @@ export interface User {
 })
 export class AuthService {
     currentUser = signal<User | null>(null);
-    private apiUrl = 'http://localhost:8080/api/auth';
+    private apiUrl = 'http://localhost:8081/api/auth';
 
     constructor(private router: Router, private http: HttpClient) {
         this.initializeUserSession();
@@ -97,7 +97,7 @@ export class AuthService {
         if (current && current.id) {
             try {
                 await firstValueFrom(this.http.post(`${this.apiUrl}/logout/${current.id}`, {}));
-            } catch(e) {
+            } catch (e) {
                 console.error("Error logging out from backend", e);
             }
         }

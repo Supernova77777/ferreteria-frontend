@@ -22,7 +22,7 @@ export interface Product {
 })
 export class ProductService {
     products = signal<Product[]>([]);
-    private apiUrl = 'http://localhost:8080/api/productos';
+    private apiUrl = 'http://localhost:8081/api/productos';
 
     constructor(private http: HttpClient) {
         this.loadProducts();
@@ -71,7 +71,7 @@ export class ProductService {
         try {
             const result = await firstValueFrom(this.http.put<Product>(`${this.apiUrl}/${targetId}`, updatedProduct));
             const formatted = { ...result, id: String(result.id) };
-            
+
             this.products.update(products =>
                 products.map(p => p.id === targetId ? formatted : p)
             );
@@ -235,18 +235,18 @@ export class ProductService {
             headerRow.getCell(8).value = 'Precio';
             headerRow.getCell(9).value = 'Fecha Compra';
             headerRow.getCell(10).value = 'Existencias Físicas';
-            
+
             for (let i = 1; i <= 10; ++i) {
-                 if (headerRow.getCell(i).value) {
-                     headerRow.getCell(i).style = baseStyle;
-                 }
+                if (headerRow.getCell(i).value) {
+                    headerRow.getCell(i).style = baseStyle;
+                }
             }
 
             // Merges headers
             try {
                 if (!worksheet.getCell('B11').isMerged) worksheet.mergeCells('B11:C11');
                 if (!worksheet.getCell('F11').isMerged) worksheet.mergeCells('F11:G11');
-            } catch (e) {}
+            } catch (e) { }
 
             for (const p of inventarioActual) {
                 const rowValues: any = [];
@@ -274,7 +274,7 @@ export class ProductService {
 
                 // Apply styles to all cells
                 for (let i = 1; i <= 10; ++i) {
-                     row.getCell(i).style = baseStyle;
+                    row.getCell(i).style = baseStyle;
                 }
 
                 row.commit();

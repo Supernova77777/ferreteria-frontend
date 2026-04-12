@@ -27,7 +27,7 @@ export interface Sale {
     providedIn: 'root'
 })
 export class SaleService {
-    private apiUrl = 'http://localhost:8080/api/ventas';
+    private apiUrl = 'http://localhost:8081/api/ventas';
     sales = signal<Sale[]>([]);
 
     constructor(private http: HttpClient) {
@@ -451,12 +451,12 @@ export class SaleService {
             const ExcelJS = await import('exceljs');
             const url = '/reportes/' + encodeURIComponent('Hoja Membretada EXcel.xlsx');
             const templateBuffer = await firstValueFrom(this.http.get(url, { responseType: 'arraybuffer' }));
-            
+
             if (!templateBuffer) throw new Error('Plantilla vacía');
             const workbook = new ExcelJS.Workbook();
             await workbook.xlsx.load(templateBuffer);
             const worksheet = workbook.worksheets[0];
-            
+
             let currentRow = 11;
             const headerRow = worksheet.getRow(10);
             headerRow.getCell(1).value = 'Venta';
@@ -479,15 +479,15 @@ export class SaleService {
                 row.getCell(11).value = Number((item.quantity * item.product.price).toFixed(2));
                 row.getCell(13).value = item.product.fechaCompra || '';
 
-                const colsToMerge = [[3,4], [5,6], [7,8], [9,10], [11,12], [13,14]];
+                const colsToMerge = [[3, 4], [5, 6], [7, 8], [9, 10], [11, 12], [13, 14]];
                 for (const [start, end] of colsToMerge) {
-                    try { worksheet.mergeCells(currentRow, start, currentRow, end); } catch (e) {}
+                    try { worksheet.mergeCells(currentRow, start, currentRow, end); } catch (e) { }
                 }
 
                 const borderStyle: any = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
                 const centerAlign: any = { vertical: 'middle', horizontal: 'center', wrapText: true };
-                
-                [1,2,3,4,5,6,7,8,9,10,11,12,13,14].forEach(colIndex => {
+
+                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].forEach(colIndex => {
                     const cell = row.getCell(colIndex);
                     cell.border = borderStyle; cell.alignment = centerAlign;
                     cell.font = { name: 'Calibri', size: 11 };
